@@ -2,7 +2,7 @@
 
 Last Updated: 2026-10-18
 
-状态：本地开发草稿，未提交或发布。
+状态：0.12.0 本地资料已准备，未提交商店，隐私政策尚未公开托管。
 
 ## Store Listing
 
@@ -20,6 +20,12 @@ Detailed Description:
 
 核实名单完整后，可查看未回关、互关及我未回关的用户。保存至少两次完整粉丝快照后，可对比名单新增和消失。首次快照只建立基线，名单消失不代表已经证实取关。
 
+支持搜索用户名和简介、按已有标签筛选、点击单元格编辑标签备注、忽略用户管理和20/50/100/200条分页。通过CSV导出筛选结果，或用整库JSON备份保存名单资料、标签备注、忽略设置、快照和扫描摘要。
+
+选择较早的关系簿JSON备份，可对比当前记录的双向未回关关系。两次均为相同未回关关系时，显示整数day观察间隔：≤24小时绿色，>24至72小时黄色，>72小时红色，未知显示破折号。时间不等于真实关注或回关日期，无法证明期间关系持续不变。当前不直接导入X官方归档文件。
+
+本扩展为独立项目，与X Corp.没有隶属、认可或赞助关系。支持：https://github.com/layman369/x-relationship-notebook/issues 。联系：1917931073x@gmail.com。
+
 名单与备注保存在本机，不上传到开发者服务器。请先在浏览器登录 X，扫描中保持目标标签页打开。扫描仅能收集页面展示且当前账号可访问的名单，结果可能受加载限制影响，完整性需用户核对。每份名单上限 10000 人或 10 分钟。不提供自动关注或取关。
 
 Category: Social & Communication
@@ -32,18 +38,20 @@ Primary Language: 简体中文
 
 | Asset | Dimensions | Status | Filename |
 |---|---|---|---|
-| Store Icon | 128×128 PNG | 尚未创建 | 待定 |
-| Screenshot 1 | 1280×800 or 640×400 | 需拍摄新版一键扫描界面 | 待定 |
-| Screenshot 2 | 1280×800 or 640×400 | 需拍摄关系分析界面 | 待定 |
-| Small Promo Tile | 440×280 | 尚未创建 | 待定 |
+| Store Icon | 128×128 PNG | 已生成 | store/assets/store-icon-128.png |
+| Screenshot 1 | 1280×800 PNG | 已生成：关系管理、标签备注 | store/assets/01-relationships-1280x800.png |
+| Screenshot 2 | 1280×800 PNG | 已生成：未回关我的 | store/assets/02-not-following-back-1280x800.png |
+| Screenshot 3 | 1280×800 PNG | 已生成：我未回关的 | store/assets/03-not-followed-back-1280x800.png |
+| Small Promo Tile | 440×280 PNG | 已生成 | store/assets/small-promo-440x280.png |
+| Marquee Promo | 1400×560 PNG | 已生成 | store/assets/marquee-1400x560.png |
 
 ## Permissions Justification
 
 | Permission | Type | Justification |
 |---|---|---|
 | sidePanel | permissions | Show a persistent progress panel beside X with readable text, collected user counts, recent profiles and a stop button while the X page is temporarily zoomed out. |
-| storage | permissions | Save collected relationship lists, user notes and follower snapshots locally, and retain scan progress during the browser session. |
-| scripting | permissions | Start the user-requested list scan on an X tab, read rendered profile cards, scroll the list and display a progress panel with a stop button. |
+| storage | permissions | Save relationship lists, profile text and avatar URLs, notes/tags, ignored settings, follower snapshots and scan summaries locally. Retain active scan progress in session storage; no records are sent to the developer. |
+| scripting | permissions | After a user starts a scan, read rendered cards and scroll the matching X list, and read public profile counts from a temporary profile tab. No follow, unfollow or message actions are submitted. |
 | https://x.com/* | host_permissions | Open the requested follower and following lists on X and run the scanner after the user starts a task. Also prefill the account name from an X profile page when the user opens the popup. |
 | https://www.x.com/* | host_permissions | Support X pages opened on the www hostname for the same user-requested scanning and account-name prefill features. |
 
@@ -52,6 +60,12 @@ Primary Language: 简体中文
 0.2.1 权限范围不变。X 域页面加载后运行轻量就绪通知脚本；无用户发起的活动任务时，不读取卡片或滚动。扫描启动时检查权限并在用户点击后请求恢复被收回的 X 域权限。真正的扫描脚本只注入匹配任务的文档 ID，避免对临时空白页或登录页面启动扫描。
 
 ## Privacy & Data Use
+
+### 后台数据类别填写依据
+
+本机处理仍属于数据处理，不应申报为「完全不处理任何用户数据」。公开用户名、昵称及可能包含个人信息的简介/用户手写备注需按后台实际定义核对 Personally identifiable information；公开资料和关系名单对应 Website content；扫描目标、计数和时间摘要需核对 User activity。凭据、私信及无关浏览历史不读取。不能因为不向开发者上传，就隐瞒扩展本机保存和处理的资料。用户自行写入的文本可能包含其他类别的信息，扩展不针对其进行画像。
+
+Remote code: No. All executable code is bundled locally. Public avatar URLs are image resources, not remotely executed code.
 
 本地处理用户数据：是。上传给开发者或开发者服务器：否。无分析遥测。
 
@@ -73,21 +87,50 @@ Primary Language: 简体中文
 
 ## Privacy Policy
 
-Privacy Policy URL: 待开发者提供公开地址及正式政策；目前没有公开托管，不具备提交条件。
+Privacy Policy: docs/privacy.md；可托管网页 docs/privacy.html。
+
+计划地址：https://layman369.github.io/x-relationship-notebook/privacy.html 。当前仅本地准备，未公开托管，提交前须部署并验证可访问。
 
 ## Distribution
 
-Visibility / Regions: 待开发者确定；目前仅本地开发加载。
+Visibility / Regions: 待开发者确定；目前仅本地开发加载。建议免费、公开、简体中文为主；地区待后台选择，Chrome与Edge分别提交。
+
+## 审核步骤与材料状态
+
+完整审核指南：store/REVIEWER-GUIDE.md（含英文摘要）。审核样例为store/example-backups/内两份完全虚构的JSON，不在扩展运行包中；只在独立测试浏览器配置文件恢复。新安装扩展无预置账号。
+
+素材来自当前界面的独立网页预览，标明虚构示例数据，不宣称是真实X扫描记录。只规范输出尺寸与格式，不增添产品不存在的功能。图标为原创关系笔记本图形，源码icons/source.svg，不使用X官方标识。
+
+剩余发布条件：隐私政策公开托管并验证可访问；真实Chrome/Edge登录X的扫描、停止、缩放恢复和原生侧边栏验收；注册商店开发者账号并填写地区及隐私申报。尚未提交任何扩展商店，未获得审核通过。资料使用方法见store/PUBLISHING-GUIDE.md。
+
+### English listing copy (optional locale)
+
+X Relationship Notebook helps you manage accessible X follower and following lists locally. Review mutual connections and missing follow-backs in either direction; search biographies, add tags and notes, manage ignored users, paginate lists and export filtered CSV results.
+
+Start a user-requested scan from the extension. A readable side panel shows counts, estimated progress, remaining time and a stop control while the scan tab is temporarily zoomed out. Results require manual completeness verification and may be affected by inaccessible accounts, rate limits, virtualized lists and site changes.
+
+Compare current records with an earlier Notebook JSON backup. Matching negative relationships at both observations display an integer day interval with green/yellow/red indicators. This is an observation interval, not an exact follow date or proof of an uninterrupted relationship. Complete follower snapshots can show names added or missing between records, without proving why a name disappeared.
+
+Records and notes are not uploaded to the developer. X page visits and avatar image requests to X servers still occur. No ads, analytics, automatic follow/unfollow actions or messages. This independent project is not affiliated with X Corp. Support: https://github.com/layman369/x-relationship-notebook/issues . Contact: 1917931073x@gmail.com .
 
 ## Developer Info
 
-Publisher Name / Contact Email / Support URL / Homepage URL: 待开发者提供，不编造身份或联系方式。
+Publisher Name: layman369
+
+Contact Email: 1917931073x@gmail.com（用户已确认拟公开）
+
+Support URL: https://github.com/layman369/x-relationship-notebook/issues
+
+Homepage URL: https://github.com/layman369/x-relationship-notebook
 
 ## Version History
 
 | Version | Date | Changes | Status |
 |---|---|---|---|
-| 0.11.1 | 2026-10-18 | 侧边栏增加分类人数，与卡片同步；菜单字号和间距缩小 | Draft |
+| 0.12.0 | 2026-10-18 | 补齐商店材料、原创图标、政策及审核步骤；运行包排除文档并保留图标目录 | Draft |
+| 0.11.1 | 2026-10-18 | 双向未回关时间对比，整数 day 标签 | Draft |
+| 0.11.0 | 2026-10-18 | 历史备份对比与颜色提示 | Draft |
+| 0.10.5 | 2026-10-18 | 侧边栏增加分类人数，与卡片同步；菜单字号和间距缩小 | Draft |
 | 0.10.4 | 2026-10-18 | 扫描对比详情默认展开，并在数据刷新时保持手动收起状态 | Draft |
 | 0.10.3 | 2026-10-18 | 关系总览返回页顶，右下角新增回到顶部图标，支持键盘与减少动态效果，权限不变 | Draft |
 | 0.10.2 | 2026-10-18 | 移除可见页尾状态栏；分类定位至统计卡片，统计区与完整表格同屏适配，权限不变 | Draft |

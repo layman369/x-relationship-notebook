@@ -1,18 +1,51 @@
 {
   "manifest_version": 3,
   "name": "X 关系簿",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "minimum_chrome_version": "120",
   "description": "在本机整理 X 关注与粉丝，分析互关关系并对比列表快照。",
-  "permissions": ["storage", "scripting", "sidePanel"],
-  "side_panel": { "default_path": "sidepanel.html" },
-  "host_permissions": ["https://x.com/*", "https://www.x.com/*"],
-  "background": { "service_worker": "background.js", "type": "module" },
-  "content_scripts": [{
-    "matches": ["https://x.com/*", "https://www.x.com/*"],
-    "js": ["scan-ready.js"],
-    "run_at": "document_idle"
-  }],
-  "action": { "default_popup": "popup.html", "default_title": "X 关系簿" },
-  "options_page": "app.html"
+  "permissions": [
+    "storage",
+    "scripting",
+    "sidePanel"
+  ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "host_permissions": [
+    "https://x.com/*",
+    "https://www.x.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://www.x.com/*"
+      ],
+      "js": [
+        "scan-ready.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "X 关系簿",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "options_page": "app.html",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
 }

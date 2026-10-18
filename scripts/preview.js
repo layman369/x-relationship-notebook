@@ -2,8 +2,8 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 const root = process.cwd();
-const allowed = new Set(['app.html', 'app.js', 'profile-ui.js', 'profile.css', 'list-view.js', 'list.css', 'core.js', 'storage.js', 'style.css', 'scan.css', 'scan-controls.js', 'scan-launch.js', 'progress-model.js','ui-refresh.js', 'sidepanel.html', 'sidepanel.js', 'sidepanel.css']);
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
+const allowed = new Set(['icons/icon-16.png', 'icons/icon-32.png', 'icons/icon-48.png', 'icons/icon-128.png', 'app.html', 'app.js', 'profile-ui.js', 'profile.css', 'list-view.js', 'list.css', 'core.js', 'storage.js', 'style.css', 'scan.css', 'scan-controls.js', 'scan-launch.js', 'progress-model.js','ui-refresh.js', 'sidepanel.html', 'sidepanel.js', 'sidepanel.css']);
+const mime = { '.png': 'image/png', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 http.createServer(async (req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname.slice(1) || 'app.html';
   if (!allowed.has(name)) { res.writeHead(404).end(); return; }

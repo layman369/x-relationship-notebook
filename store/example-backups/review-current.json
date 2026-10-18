@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "accounts": {
+    "sample_owner": {
+      "following": {
+        "users": [
+          {
+            "handle": "sample_user_01",
+            "name": "林间笔记",
+            "bio": "记录设计、阅读与日常灵感。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_02",
+            "name": "小周的工具箱",
+            "bio": "分享实用工具与效率方法。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_03",
+            "name": "山海读书",
+            "bio": "在文字里认识更大的世界。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_04",
+            "name": "代码漫游",
+            "bio": "前端开发与开源项目笔记。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_05",
+            "name": "晨光摄影",
+            "bio": "用镜头记录城市里的微小瞬间。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_06",
+            "name": "拾光手帐",
+            "bio": "把值得记住的事情留在纸上。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_07",
+            "name": "慢慢生长",
+            "bio": "持续学习，分享生活中的小发现。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_08",
+            "name": "产品观察",
+            "bio": "产品思考与用户体验记录。",
+            "avatarUrl": ""
+          }
+        ],
+        "complete": true,
+        "updatedAt": "2026-10-18T12:00:00.000Z"
+      },
+      "followers": {
+        "users": [
+          {
+            "handle": "sample_user_01",
+            "name": "林间笔记",
+            "bio": "记录设计、阅读与日常灵感。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_02",
+            "name": "小周的工具箱",
+            "bio": "分享实用工具与效率方法。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_03",
+            "name": "山海读书",
+            "bio": "在文字里认识更大的世界。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_04",
+            "name": "代码漫游",
+            "bio": "前端开发与开源项目笔记。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_05",
+            "name": "晨光摄影",
+            "bio": "用镜头记录城市里的微小瞬间。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_09",
+            "name": "周末散步",
+            "bio": "城市散步、咖啡和旅行。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_10",
+            "name": "清风电台",
+            "bio": "音乐、播客与生活片段。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_11",
+            "name": "手作日记",
+            "bio": "用双手做一点喜欢的小东西。",
+            "avatarUrl": ""
+          },
+          {
+            "handle": "sample_user_12",
+            "name": "北岸书房",
+            "bio": "阅读随想，保持好奇。",
+            "avatarUrl": ""
+          }
+        ],
+        "complete": true,
+        "updatedAt": "2026-10-18T12:00:00.000Z"
+      },
+      "notes": {
+        "sample_user_01": {
+          "tag": "朋友",
+          "note": "一起交流设计灵感"
+        },
+        "sample_user_03": {
+          "tag": "阅读",
+          "note": "关注书单更新"
+        },
+        "sample_user_06": {
+          "tag": "待回关",
+          "note": "近期关注的创作者"
+        },
+        "sample_user_09": {
+          "tag": "生活",
+          "note": "周末散步路线"
+        }
+      },
+      "ignored": [
+        "sample_user_12"
+      ],
+      "hideIgnored": true,
+      "snapshots": [],
+      "scanHistory": []
+    }
+  }
+}
