@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>X 关系簿 · 采集进度</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="scan.css"><link rel="stylesheet" href="sidepanel.css"><link rel="stylesheet" href="profile.css"></head>
+<body class="progress-panel" data-surface="sidepanel"><div class="panel-brand"><div class="brand"><b class="logo">𝕏</b><strong>采集进度</strong></div><span class="badge">独立字号</span></div>
+<p class="panel-intro">X 页面以 25% 扫描，进度面板保持正常字号。</p><section id="scan-controls"></section>
+<section class="scan-meter" aria-labelledby="meter-title"><div class="meter-heading"><strong id="meter-title">等待扫描任务</strong><span id="meter-percent">—</span></div><progress id="scan-meter" max="100" aria-label="当前名单采集进度"></progress><p id="meter-detail">开始采集后显示进度</p><strong id="meter-eta">预计剩余：等待开始</strong><span id="meter-elapsed">已用时：0 秒</span><small>预计时间随采集速度变化，仅针对当前名单；不代表名单完整。</small></section>
+<div class="progress-counts"><article><span>关注者</span><strong id="followers-count">0</strong></article><article><span>正在关注</span><strong id="following-count">0</strong></article></div>
+<div class="panel-links"><button id="focus-scan" disabled>回到扫描页面</button><button id="open-manager">关系管理台 ↗</button></div>
+<p id="panel-state" role="status">等待扫描任务</p><h2>最近采集 <span>最多展示 50 条</span></h2><div id="recent-users" class="recent-users"><p>采集到用户后会实时显示在这里。</p></div>
+<h2>本次记录</h2><div id="scan-results"></div><p class="panel-footnote">关闭侧边栏不会停止任务。需要结束时请点击“停止扫描”。采集结果仍需核对完整性。</p>
+<script type="module" src="sidepanel.js"></script></body></html>

@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "X 关系簿",
+  "version": "0.11.1",
+  "minimum_chrome_version": "120",
+  "description": "在本机整理 X 关注与粉丝，分析互关关系并对比列表快照。",
+  "permissions": ["storage", "scripting", "sidePanel"],
+  "side_panel": { "default_path": "sidepanel.html" },
+  "host_permissions": ["https://x.com/*", "https://www.x.com/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "content_scripts": [{
+    "matches": ["https://x.com/*", "https://www.x.com/*"],
+    "js": ["scan-ready.js"],
+    "run_at": "document_idle"
+  }],
+  "action": { "default_popup": "popup.html", "default_title": "X 关系簿" },
+  "options_page": "app.html"
+}

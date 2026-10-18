@@ -1,0 +1,134 @@
+# Chrome Web Store Listing — X 关系簿
+
+Last Updated: 2026-10-18
+
+状态：本地开发草稿，未提交或发布。
+
+## Store Listing
+
+Extension Name: X 关系簿
+
+Short Description: 在本机整理 X 关注与粉丝，分析互关关系并对比列表快照。
+
+Detailed Description:
+
+一键收集可访问的 X 关注者和正在关注名单，整理关注关系。
+
+输入目标用户名，选择扫描两份名单或其中一份。扫描时显示收集进度，可随时停止。也支持导入名单、搜索、标签备注、CSV 导出和本机备份。
+
+扫描时默认临时缩小页面到 25%，也可选择 50%、67%、80% 或保持原比例，让页面容纳更多用户。只缩放扫描标签页，扫描结束或停止后恢复此前的比例。实际名单加载数量仍取决于 X。
+
+核实名单完整后，可查看未回关、互关及我未回关的用户。保存至少两次完整粉丝快照后，可对比名单新增和消失。首次快照只建立基线，名单消失不代表已经证实取关。
+
+名单与备注保存在本机，不上传到开发者服务器。请先在浏览器登录 X，扫描中保持目标标签页打开。扫描仅能收集页面展示且当前账号可访问的名单，结果可能受加载限制影响，完整性需用户核对。每份名单上限 10000 人或 10 分钟。不提供自动关注或取关。
+
+Category: Social & Communication
+
+Single Purpose: 在本机收集、整理并分析 X 关注关系名单。
+
+Primary Language: 简体中文
+
+## Graphics & Assets
+
+| Asset | Dimensions | Status | Filename |
+|---|---|---|---|
+| Store Icon | 128×128 PNG | 尚未创建 | 待定 |
+| Screenshot 1 | 1280×800 or 640×400 | 需拍摄新版一键扫描界面 | 待定 |
+| Screenshot 2 | 1280×800 or 640×400 | 需拍摄关系分析界面 | 待定 |
+| Small Promo Tile | 440×280 | 尚未创建 | 待定 |
+
+## Permissions Justification
+
+| Permission | Type | Justification |
+|---|---|---|
+| sidePanel | permissions | Show a persistent progress panel beside X with readable text, collected user counts, recent profiles and a stop button while the X page is temporarily zoomed out. |
+| storage | permissions | Save collected relationship lists, user notes and follower snapshots locally, and retain scan progress during the browser session. |
+| scripting | permissions | Start the user-requested list scan on an X tab, read rendered profile cards, scroll the list and display a progress panel with a stop button. |
+| https://x.com/* | host_permissions | Open the requested follower and following lists on X and run the scanner after the user starts a task. Also prefill the account name from an X profile page when the user opens the popup. |
+| https://www.x.com/* | host_permissions | Support X pages opened on the www hostname for the same user-requested scanning and account-name prefill features. |
+
+0.2.0 移除 activeTab，增加范围限定为 X 的页面访问权限。无全站权限、无需 cookies / identity / tabs 权限。
+
+0.2.1 权限范围不变。X 域页面加载后运行轻量就绪通知脚本；无用户发起的活动任务时，不读取卡片或滚动。扫描启动时检查权限并在用户点击后请求恢复被收回的 X 域权限。真正的扫描脚本只注入匹配任务的文档 ID，避免对临时空白页或登录页面启动扫描。
+
+## Privacy & Data Use
+
+本地处理用户数据：是。上传给开发者或开发者服务器：否。无分析遥测。
+
+| Data type | Local processing | Off-device transmission | Purpose | Shared with third parties |
+|---|---|---|---|---|
+| Usernames / display names | 是 | 不由扩展上传 | 整理关注与粉丝名单 | 否 |
+| Profile biographies and avatar URLs | 是 | 显示头像时向 X 图片服务器请求图片；不上传简介给开发者 | 展示用户资料及搜索 | 不向开发者或其他第三方分享 |
+| Website content: relationship list membership | 是 | 不由扩展上传 | 关系分析及快照差集 | 否 |
+| User activity: scan target and counters | 当前浏览器会话内 | 不由扩展上传 | 扫描进度及停止操作 | 否 |
+| User-entered notes and tags | 是 | 不由扩展上传 | 用户整理关系 | 否 |
+| Passwords / cookies / authentication tokens | 不读取 | 无 | 不适用 | 否 |
+| Health / financial / private messages / precise location | 不读取 | 无 | 不适用 | 否 |
+
+用户主动扫描或打开个人主页时，浏览器会正常访问 X 并请求页面；该访问受 X 自身政策约束。用户主动导出的 CSV / JSON 是本地文件，由用户自行保存和分享。
+
+- 数据不出售给第三方。
+- 数据仅用于此扩展的关注关系管理功能。
+- 数据不用于信用评级或借贷。
+
+## Privacy Policy
+
+Privacy Policy URL: 待开发者提供公开地址及正式政策；目前没有公开托管，不具备提交条件。
+
+## Distribution
+
+Visibility / Regions: 待开发者确定；目前仅本地开发加载。
+
+## Developer Info
+
+Publisher Name / Contact Email / Support URL / Homepage URL: 待开发者提供，不编造身份或联系方式。
+
+## Version History
+
+| Version | Date | Changes | Status |
+|---|---|---|---|
+| 0.11.1 | 2026-10-18 | 侧边栏增加分类人数，与卡片同步；菜单字号和间距缩小 | Draft |
+| 0.10.4 | 2026-10-18 | 扫描对比详情默认展开，并在数据刷新时保持手动收起状态 | Draft |
+| 0.10.3 | 2026-10-18 | 关系总览返回页顶，右下角新增回到顶部图标，支持键盘与减少动态效果，权限不变 | Draft |
+| 0.10.2 | 2026-10-18 | 移除可见页尾状态栏；分类定位至统计卡片，统计区与完整表格同屏适配，权限不变 | Draft |
+| 0.10.1 | 2026-10-18 | 紧凑卡片及工具栏、窗口自适应表格、两行简介与可折叠扫描详情；备份恢复移至更新时间卡片，权限不变 | Draft |
+| 0.10.0 | 2026-10-18 | 持久保存扫描用时、主页人数与实际采集人数，最近30次摘要、对比展示及备份恢复；权限不变 | Draft |
+| 0.9.1 | 2026-10-18 | 精简为标签备注列头的已有标签选择，移除独立筛选栏，保留单元格编辑；权限不变 | Draft |
+| 0.9.0 | 2026-10-18 | 标签备注组合筛选及单元格点击编辑，分页导出同步筛选；权限不变 | Draft |
+| 0.8.2 | 2026-10-18 | 备份文件名加入本地导出时间，精确到秒；数据格式与权限不变 | Draft |
+| 0.8.1 | 2026-10-18 | 临时后台主页读取关注/粉丝总数，区分精确值与缩写估算，超时回退与任务清理；权限不变 | Draft |
+| 0.8.0 | 2026-10-18 | 自适应等待及滚动步长，加载降速、底部重叠补扫与真实时间结束阈值，停止立即中断等待；权限不变 | Draft |
+| 0.7.0 | 2026-10-18 | 增量卡片解析、事件合并、批量保存与界面刷新限频，滚动参数及权限不变 | Draft |
+| 0.6.3 | 2026-10-18 | 分类及卡片点击后自动定位内容区，支持键盘焦点和减少动态效果，权限不变 | Draft |
+| 0.6.2 | 2026-10-18 | 管理台字号、字重和对比度优化，扩大资料列，优化长简介阅读；权限不变 | Draft |
+| 0.6.1 | 2026-10-18 | 修复列表滚动时表头上沿内容穿透；表头与工具栏背景遮挡、滚动绘制边界优化，权限不变 | Draft |
+| 0.6.0 | 2026-10-18 | 移除页面浮层；侧栏增加进度条、当前名单百分比与时间预估，未知总数及停滞状态明确提示；权限不变 | Draft |
+| 0.5.4 | 2026-10-18 | 修复可点击用户卡片简介漏采，以及缺字段批次清空已知简介和头像；新增回归测试，权限不变 | Draft |
+| 0.5.3 | 2026-10-18 | 添加账号改用统一样式对话框，行内校验及键盘操作，权限不变 | Draft |
+| 0.5.2 | 2026-10-18 | 突出呈现当前账号数据更新时间及两份名单各自的写入时间，权限不变 | Draft |
+| 0.5.1 | 2026-10-18 | 六张统计卡片与左侧分类的名称、顺序和数量一致，补齐我未回关的；响应式布局，权限不变 | Draft |
+| 0.5.0 | 2026-10-18 | 新增头像链接与简介采集、列表及侧栏展示、简介搜索展开、导出和备份；图片失效回退；权限不变，更新截图 | Draft |
+| 0.4.3 | 2026-10-18 | 统计区新增可点击的已忽略用户卡片与人数提示，响应式五卡片布局；截图需更新，权限不变 | Draft |
+| 0.4.2 | 2026-10-18 | 新增已忽略用户管理页签、人数提示、搜索分页及取消忽略；支持管理不在最新名单中的已忽略用户；权限不变 | Draft |
+| 0.4.1 | 2026-10-18 | 用户忽略及取消忽略；按账号保存的忽略过滤开关；统计、列表、导出及变化展示同步过滤，权限不变 | Draft |
+| 0.4.0 | 2026-10-18 | 统计卡片可点击筛选；20/50/100/200 条分页及页码跳转；固定高度卡片内滚动；更新列表截图，权限不变 | Draft |
+| 0.3.1 | 2026-10-18 | 移除内置演示入口及虚构数据生成代码，一次性清理旧演示账号并保留其他账号数据；截图需更新 | Draft |
+| 0.3.0 | 2026-10-18 | 默认 25% 扫描；新增正常字号侧边栏、实时人数与最近用户；新增 sidePanel 权限；截图需更新 | Draft |
+| 0.2.2 | 2026-10-18 | 可选扫描缩放比例，默认 50%，单标签页临时缩放及结束恢复；权限范围不变；扫描设置截图需更新 | Draft |
+| 0.2.1 | 2026-10-18 | 修复空白页误触发注入；目标文档就绪握手与 ID 校验；增加 X 权限检查及恢复入口 | Draft |
+| 0.2.0 | 2026-10-18 | 一键双名单扫描、进度与停止、会话任务状态、串行增量保存；新增 X 域权限 | Draft |
+| 0.1.0 | 2026-10-18 | 分段采集、导入、关系分析与粉丝快照 | Draft |
+
+## Review Notes
+
+真实 X 页面扫描与 Chrome/Edge 加载兼容性仍待验收。模拟环境测试不能作为完整列表采集证明。单份达到底部后仍标记部分列表，必须由用户核对确认完整；列表裁剪、推荐卡片、网络限流和改名均可能影响分析。不支持回溯历史取关或识别改名后的稳定用户身份。
+
+安装包采用白名单打包，排除 .git、测试、CHROMEWEBSTORE.md、演示截图和环境文件。
+
+0.3.0 侧边栏不跟随 X 页面缩放；启动任务时打开，另有独立的打开入口，关闭后任务仍继续。默认在浏览器右侧，实际位置由浏览器偏好决定。展示的数据与已有本机名单相同，不新增远程传输。原生侧边栏打开及 X 实际采集待真实浏览器验收。
+
+0.4.0 用户可点击统计卡片查看对应名单，通过分页浏览所有结果。每页可选 20、50、100 或 200 条；列表内部滚动，表头和翻页入口持续可见，搜索和导出仍作用于完整筛选结果。
+
+0.4.1 用户可忽略指定账号，并切换是否在统计、名单、导出和变化结果中隐藏。忽略设置只保存在本机，与现有备份一起导入导出；原始采集名单和快照不因忽略而删除。新增忽略设置截图待更新。
+
+0.5.0 用户列表及右侧进度面板显示采集到的头像和简介；简介保存为本机纯文本，头像保留公开的 X 图片链接。显示头像时向 pbs.twimg.com 发起图片请求，不携带页面来源信息，不使用第三方头像服务。加载失败显示本地文字占位。资料字段兼容旧备份，并随用户主动导出写入本地 CSV/JSON 文件。
