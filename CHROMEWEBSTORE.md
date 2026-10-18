@@ -2,7 +2,7 @@
 
 Last Updated: 2026-10-18
 
-状态：0.12.0 本地资料已准备，未提交商店，隐私政策尚未公开托管。
+状态：0.12.0 本地资料已准备，未提交商店，隐私政策已公开托管并验证HTTP 200。
 
 ## Store Listing
 
@@ -89,7 +89,9 @@ Remote code: No. All executable code is bundled locally. Public avatar URLs are 
 
 Privacy Policy: docs/privacy.md；可托管网页 docs/privacy.html。
 
-计划地址：https://layman369.github.io/x-relationship-notebook/privacy.html 。当前仅本地准备，未公开托管，提交前须部署并验证可访问。
+Privacy Policy URL: https://layman369.github.io/x-relationship-notebook/privacy.html
+
+状态：2026-10-18 已开启GitHub Pages，部署源master分支/docs；已验证HTTP 200、政策正文及联系邮箱。
 
 ## Distribution
 
@@ -101,7 +103,7 @@ Visibility / Regions: 待开发者确定；目前仅本地开发加载。建议�
 
 素材来自当前界面的独立网页预览，标明虚构示例数据，不宣称是真实X扫描记录。只规范输出尺寸与格式，不增添产品不存在的功能。图标为原创关系笔记本图形，源码icons/source.svg，不使用X官方标识。
 
-剩余发布条件：隐私政策公开托管并验证可访问；真实Chrome/Edge登录X的扫描、停止、缩放恢复和原生侧边栏验收；注册商店开发者账号并填写地区及隐私申报。尚未提交任何扩展商店，未获得审核通过。资料使用方法见store/PUBLISHING-GUIDE.md。
+剩余发布条件：真实Chrome/Edge登录X的扫描、停止、缩放恢复和原生侧边栏验收；注册商店开发者账号并填写地区及隐私申报。尚未提交任何扩展商店，未获得审核通过。资料使用方法见store/PUBLISHING-GUIDE.md。
 
 ### English listing copy (optional locale)
 
