@@ -177,3 +177,8 @@ Homepage URL: https://github.com/layman369/x-relationship-notebook
 0.4.1 用户可忽略指定账号，并切换是否在统计、名单、导出和变化结果中隐藏。忽略设置只保存在本机，与现有备份一起导入导出；原始采集名单和快照不因忽略而删除。新增忽略设置截图待更新。
 
 0.5.0 用户列表及右侧进度面板显示采集到的头像和简介；简介保存为本机纯文本，头像保留公开的 X 图片链接。显示头像时向 pbs.twimg.com 发起图片请求，不携带页面来源信息，不使用第三方头像服务。加载失败显示本地文字占位。资料字段兼容旧备份，并随用户主动导出写入本地 CSV/JSON 文件。
+
+
+## GitHub 分发记录
+
+2026-10-19 已发布 GitHub Release v0.12.0：https://github.com/layman369/x-relationship-notebook/releases/tag/v0.12.0 。附件为运行 ZIP 与 SHA256SUMS.txt，公开下载后校验通过。该状态仅指 GitHub 分发，不表示已提交或通过 Chrome / Edge 商店审核。
