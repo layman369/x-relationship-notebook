@@ -1,8 +1,8 @@
 # Chrome Web Store Listing — X 关系簿
 
-Last Updated: 2026-10-18
+Last Updated: 2026-10-21
 
-状态：0.12.0 本地资料已准备，未提交商店，隐私政策已公开托管并验证HTTP 200。
+状态：0.12.0 已于2026-10-21成功提交Chrome商店审核，后台显示待审核；已选择审核通过后自动发布，尚未公开上架。
 
 ## Store Listing
 
@@ -95,7 +95,7 @@ Privacy Policy URL: https://layman369.github.io/x-relationship-notebook/privacy.
 
 ## Distribution
 
-Visibility / Regions: 待开发者确定；目前仅本地开发加载。建议免费、公开、简体中文为主；地区待后台选择，Chrome与Edge分别提交。
+Visibility / Regions: 2026-10-21提交时设置为免费、公开、所有地区。建议免费、公开、简体中文为主；地区待后台选择，Chrome与Edge分别提交。
 
 ## 审核步骤与材料状态
 
@@ -103,7 +103,7 @@ Visibility / Regions: 待开发者确定；目前仅本地开发加载。建议�
 
 素材来自当前界面的独立网页预览，标明虚构示例数据，不宣称是真实X扫描记录。只规范输出尺寸与格式，不增添产品不存在的功能。图标为原创关系笔记本图形，源码icons/source.svg，不使用X官方标识。
 
-剩余发布条件：真实Chrome/Edge登录X的扫描、停止、缩放恢复和原生侧边栏验收；注册商店开发者账号并填写地区及隐私申报。尚未提交任何扩展商店，未获得审核通过。资料使用方法见store/PUBLISHING-GUIDE.md。
+发布进度：开发者账号、商品详情、地区及隐私申报已完成，2026-10-21已提交Chrome商店审核；尚未获得审核通过。真实Chrome/Edge登录X的扫描、停止、缩放恢复和原生侧边栏验收仍需实测，不因提交审核视为已完成。资料使用方法见store/PUBLISHING-GUIDE.md。
 
 ### English listing copy (optional locale)
 
@@ -129,7 +129,7 @@ Homepage URL: https://github.com/layman369/x-relationship-notebook
 
 | Version | Date | Changes | Status |
 |---|---|---|---|
-| 0.12.0 | 2026-10-18 | 补齐商店材料、原创图标、政策及审核步骤；运行包排除文档并保留图标目录 | Draft |
+| 0.12.0 | 2026-10-18 | 补齐商店材料、原创图标、政策及审核步骤；运行包排除文档并保留图标目录 | Submitted 2026-10-21 |
 | 0.11.1 | 2026-10-18 | 双向未回关时间对比，整数 day 标签 | Draft |
 | 0.11.0 | 2026-10-18 | 历史备份对比与颜色提示 | Draft |
 | 0.10.5 | 2026-10-18 | 侧边栏增加分类人数，与卡片同步；菜单字号和间距缩小 | Draft |
@@ -182,3 +182,17 @@ Homepage URL: https://github.com/layman369/x-relationship-notebook
 ## GitHub 分发记录
 
 2026-10-19 已发布 GitHub Release v0.12.0：https://github.com/layman369/x-relationship-notebook/releases/tag/v0.12.0 。附件为运行 ZIP 与 SHA256SUMS.txt，公开下载后校验通过。该状态仅指 GitHub 分发，不表示已提交或通过 Chrome / Edge 商店审核。
+
+
+## Chrome提交进度（2026-10-21）
+
+- 项目ID：ggpjbpcpkibjljfejghmencldcplnole。
+- 管理入口：https://chrome.google.com/webstore/devconsole/04cf1799-11cd-40e1-a01b-38c6d6a92881/ggpjbpcpkibjljfejghmencldcplnole/edit/listing
+- 初次上传因账号缺少两步验证被拒；用户启用后重试成功，0.12.0运行ZIP已上传。
+- 商品详情已保存并刷新核对：介绍752字符，社交分类，中文（中国），原创图标、三张截图、小型及顶部宣传图；主页和支持链接已填写。
+- 隐私权已保存并复核：单一用途、storage/scripting/sidePanel/主机权限理由、无远程代码；勾选个人身份信息、用户活动、网站内容以及三项有限用途声明；未声明读取身份验证信息、私信、位置或无关浏览历史。政策链接为已上线地址。
+- 测试说明294字符，已保存；凭据留空，因为扩展无开发者登录，真实扫描由审核员使用获准使用的X账号测试。
+- 分发保留后台设置：免费、公开、所有地区。账号原有非交易者声明保持不变。
+- 发布者名称保存为layman369；联系邮箱1917931073x@gmail.com已完成验证，后台确认通过。
+- 已点击最终提交审核，后台明确显示“已将您的扩展程序提交送审”，状态为“待审核”；选择审核通过后自动发布，当前尚未公开上架。
+- 提交成功截图：artifacts/store-submitted-0.12.0.jpg。
