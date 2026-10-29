@@ -8,7 +8,7 @@ export function queryUsers(data, view, search = '', filters = {}) {
   const relations = analyze(data);
   const known = new Map(relations.map(user => [user.handle, user]));
   // Keep absent users manageable after a new scan replaces the collected lists.
-  const users = view === 'ignored' ? [...ignored].map(handle => known.get(handle) || { handle, name: handle, relation: 'unrecorded' }) : relations;
+  const users = view === 'unfollowers' ? (filters.unfollowers || []) : view === 'ignored' ? [...ignored].map(handle => known.get(handle) || { handle, name: handle, relation: 'unrecorded' }) : relations;
   return users.filter(user => {
     if (view !== 'ignored' && data.hideIgnored !== false && ignored.has(user.handle)) return false;
     const matches = view === 'all' || view === 'ignored' || (view === 'following' ? following.has(user.handle) : view === 'followers' ? followers.has(user.handle) : user.relation === view);

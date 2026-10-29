@@ -1,5 +1,5 @@
 import { createRefreshScheduler } from './ui-refresh.js';
-import { account, handle, setList, saveSnapshot, diffSnapshots, validateState, setIgnored, isFilteredOut, compareNotBack } from './core.js';
+import { account, handle, setList, saveSnapshot, diffSnapshots, validateState, setIgnored, isFilteredOut, compareBackupRelations } from './core.js';
 import { readState, updateState, isExtension } from './storage.js';
 import { mountScanControls } from './scan-controls.js';
 import { queryUsers, paginate } from './list-view.js';
@@ -13,8 +13,8 @@ let visible = [];
 let scanBusy = false;
 let comparisonBackup = null, comparisonFilename = '', comparison = null;
 let currentPage = 1, pageSize = 20;
-const labels = { mutual: '互相关注', notBack: '未回关我', fansOnly: '我未回关', followingUnknown: '我已关注 · 回关待确认', followerUnknown: '关注了我 · 关系待确认', unrecorded: '暂无当前名单记录' };
-const viewNames = { all: '全部关系', following: '已收集关注', followers: '已收集粉丝', mutual: '互相关注', notBack: '未回关我的', fansOnly: '我未回关的', ignored: '已忽略用户', changes: '粉丝变化' };
+const labels = { unfollowers: '取消关注者', mutual: '互相关注', notBack: '未回关我', fansOnly: '我未回关', followingUnknown: '我已关注 · 回关待确认', followerUnknown: '关注了我 · 关系待确认', unrecorded: '暂无当前名单记录' };
+const viewNames = { unfollowers: '取关者', all: '全部关系', following: '已收集关注', followers: '已收集粉丝', mutual: '互相关注', notBack: '未回关我的', fansOnly: '我未回关的', ignored: '已忽略用户', changes: '粉丝变化' };
 function element(tag, text, className) {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
@@ -120,15 +120,6 @@ function openMemo(username) {
 function observationText(item) {
   return item ? `${Math.floor(item.durationMs / 86400000)} day` : '—';
 }
-function compareBothDirections(data, before) {
-  const results = [], warnings = [];
-  for (const relation of ['notBack', 'fansOnly']) {
-    try { results.push(compareNotBack(data, before, relation)); }
-    catch (error) { warnings.push(error.message); }
-  }
-  if (!results.length) throw new Error([...new Set(warnings)].join('；'));
-  return { ...results[0], users: new Map(results.flatMap(result => [...result.users])), warnings };
-}
 function renderBackupComparison(data) {
   comparison = null;
   $('#backup-comparison').hidden = !comparisonBackup;
@@ -137,9 +128,11 @@ function renderBackupComparison(data) {
   const description = $('#comparison-description');
   try {
     if (scanBusy) throw new Error('扫描进行中，时间对比暂不可用；请在扫描结束并核对名单完整性后查看');
-    comparison = compareBothDirections(data, comparisonBackup.accounts[owner]);
+    comparison = compareBackupRelations(data, comparisonBackup.accounts[owner]);
     const count = [...comparison.users].filter(([username, item]) => item && !isFilteredOut(data, username)).length;
-    description.textContent = `${comparisonFilename} · @${owner} · ${new Date(comparison.startedAt).toLocaleString('zh-CN')} → ${new Date(comparison.endedAt).toLocaleString('zh-CN')} · 两次关系相同 ${count} 人（未回关我的 / 我未回关的，按忽略设置过滤）。${comparison.warnings.join("；")}`;
+    const interval = comparison.unfollowers || comparison;
+    const lostCount = queryUsers(data, 'unfollowers', '', { unfollowers: comparison.unfollowers?.users }).length;
+    description.textContent = `${comparisonFilename} · @${owner} · ${new Date(interval.startedAt).toLocaleString('zh-CN')} → ${new Date(interval.endedAt).toLocaleString('zh-CN')} · 取关者 ${comparison.unfollowers ? lostCount : "待确认"} 人；两次未回关关系相同 ${count} 人（按忽略设置过滤）。${comparison.warnings.join("；")}`;
   } catch (error) { description.textContent = `${comparisonFilename} · ${error.message}`; }
 }
 function render() {
@@ -150,22 +143,25 @@ function render() {
   const data = current();
   renderCollectionTime(data);
   renderBackupComparison(data);
+  document.querySelector('[data-view="unfollowers"]').hidden = !comparisonBackup;
+  if (view === 'unfollowers' && !comparisonBackup) view = 'all';
   $('#ignored-nav-count').textContent = data?.ignored?.length || 0;
-  const subtitles = { following: 'following', followers: 'followers', notBack: 'not following back', mutual: 'mutual connections', fansOnly: 'not followed back by me', ignored: 'ignored users' };
+  const subtitles = { unfollowers: 'unfollowers', following: 'following', followers: 'followers', notBack: 'not following back', mutual: 'mutual connections', fansOnly: 'not followed back by me', ignored: 'ignored users' };
   $('#stats').replaceChildren();
   document.querySelectorAll('nav .nav[data-view]').forEach(nav => {
     const target = nav.dataset.view;
     if (!Object.hasOwn(subtitles, target)) return;
+    if (target === 'unfollowers' && !comparisonBackup) return;
     const label = nav.querySelector('span').textContent;
     const missingList = target === 'notBack' && !data?.followers.complete ? '粉丝' : target === 'fansOnly' && !data?.following.complete ? '关注' : '';
-    const value = missingList ? '—' : queryUsers(data, target).length;
+    const value = target === 'unfollowers' ? (comparison?.unfollowers ? queryUsers(data, target, '', { unfollowers: comparison.unfollowers.users }).length : '—') : missingList ? '—' : queryUsers(data, target).length;
     const badge = nav.querySelector('.nav-count');
     if (badge) { badge.textContent = String(value); badge.setAttribute('aria-label', missingList ? '人数待确认' : `${value} 人`); }
     const card = element('button', undefined, 'stat'); card.type = 'button'; card.dataset.view = target;
     card.classList.toggle('is-selected', view === target); card.setAttribute('aria-pressed', String(view === target));
     card.setAttribute('aria-label', `查看${label}`);
     card.onclick = () => switchView(target);
-    card.append(element('div', label, 'stat-label'), element('strong', String(value)), element('span', missingList ? `需完整${missingList}名单` : subtitles[target], 'stat-sub'));
+    card.append(element('div', label, 'stat-label'), element('strong', String(value)), element('span', target === 'unfollowers' && !comparison?.unfollowers ? '需较早备份及完整粉丝名单' : missingList ? `需完整${missingList}名单` : subtitles[target], 'stat-sub'));
     $('#stats').append(card);
   });
   $('#health-text').textContent = '互关可据已有记录确认；判断未回关需要另一侧名单完整。完整性由你核对。';
@@ -190,7 +186,7 @@ function render() {
   const changes = view === 'changes';
   $('#list-panel').hidden = changes; $('#changes-panel').hidden = !changes;
   $('#list-title').textContent = viewNames[view];
-  const filters = memoFilters();
+  const filters = { ...memoFilters(), unfollowers: comparison?.unfollowers?.users };
   const tags = [...new Set(Object.values(data?.notes || {}).map(memo => String(memo.tag || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
   if (filters.tag.startsWith('tag:') && !tags.includes(filters.tag.slice(4))) { filters.tag = ''; currentPage = 1; }
   $('#tag-filter').replaceChildren();
@@ -224,6 +220,12 @@ function render() {
       name.append(expand);
     }
     const relation = element('td'); relation.append(element('span', labels[user.relation], `relation ${user.relation}`));
+    if (view !== 'unfollowers' && comparison?.unfollowerHandles.has(user.handle)) relation.append(element('span', labels.unfollowers, 'relation unfollowers'));
+    if (view === 'unfollowers') {
+      const interval = comparison.unfollowers;
+      const detail = element('small', `${new Date(interval.startedAt).toLocaleString('zh-CN')} → ${new Date(interval.endedAt).toLocaleString('zh-CN')}`, 'unfollow-interval');
+      detail.title = '这两次记录之间从粉丝名单中消失，无法确定准确取关时间或原因。'; relation.append(detail);
+    }
     if (comparison && ['notBack', 'fansOnly'].includes(user.relation) && comparison.users.has(user.handle)) {
       const observation = comparison.users.get(user.handle);
       const badge = element('span', observationText(observation), `duration-badge duration-${observation?.level || 'unknown'}`);
@@ -255,6 +257,10 @@ function render() {
     $('#empty p').textContent = filtered ? '请调整搜索条件后重试。' : '在其他用户名单中点击“忽略”，即可在这里统一管理。';
   }
   if (!visible.length && filtered && view !== 'ignored' && !((view === 'notBack' && !data?.followers.complete) || (view === 'fansOnly' && !data?.following.complete))) $('#empty p').textContent = '请在列头选择其他标签或全部标签，或调整搜索条件。';
+  if (view === 'unfollowers') {
+    $('#empty h3').textContent = comparison?.unfollowers ? (filtered ? '暂无符合条件的取关者' : '未发现取关者') : '暂无法判断取关者';
+    $('#empty p').textContent = comparison?.unfollowers ? '取关者指备份中关注了你、当前完整粉丝名单中已不存在的用户；可能涉及改名、封号或账号停用。' : '请停止扫描、确认当前粉丝名单完整，并选择粉丝名单采集时间更早的同账号备份。';
+  }
   $('#snapshot').disabled = !data?.followers.complete || scanBusy;
   for (const selector of ['#show-import', '#restore']) $(selector).disabled = scanBusy;
   renderChanges(data);
@@ -356,9 +362,9 @@ $('#compare-backup').onchange = async event => {
     if (file.size > 20 * 1024 * 1024) throw new Error('备份请控制在 20MB 内');
     const backup = validateState(JSON.parse(await file.text()));
     if (selectedOwner !== owner || scanBusy) throw new Error('当前账号或扫描状态已变化，请重新选择备份');
-    compareBothDirections(current(), backup.accounts[owner]);
+    compareBackupRelations(current(), backup.accounts[owner]);
     comparisonBackup = backup; comparisonFilename = file.name;
-    switchView(view === 'fansOnly' ? 'fansOnly' : 'notBack'); status('备份时间对比已完成，当前数据未被替换');
+    switchView('unfollowers'); status('备份对比已完成，当前数据未被替换');
   } catch (error) {
     $('#comparison-error').textContent = `无法对比：${error.message}`; $('#comparison-error').hidden = false;
     $('#results-workspace').scrollIntoView({ block: 'start' });
@@ -379,7 +385,7 @@ $('#restore').onchange = event => safely(async () => {
 });
 $('#export-csv').onclick = () => {
   const safe = value => { let s = String(value || ''); if (/^[\s]*[=+\-@]/.test(s)) s = `'${s}`; return `"${s.replaceAll('"', '""')}"`; };
-  const rows = [['用户名', '昵称', '关系', '标签', '备注', '已忽略', '头像链接', '简介', '未回关观察时长', '观察起点', '观察终点'], ...visible.map(u => [u.handle, u.name, labels[u.relation], current().notes[u.handle]?.tag, current().notes[u.handle]?.note, (current().ignored || []).includes(u.handle) ? '是' : '否', u.avatarUrl, u.bio, comparison && ['notBack', 'fansOnly'].includes(u.relation) && comparison.users.has(u.handle) ? observationText(comparison.users.get(u.handle)) : '', comparison?.users.get(u.handle) ? new Date(comparison.startedAt).toISOString() : '', comparison?.users.get(u.handle) ? new Date(comparison.endedAt).toISOString() : ''])];
+  const rows = [['用户名', '昵称', '关系', '标签', '备注', '已忽略', '头像链接', '简介', '未回关观察时长', '观察起点', '观察终点', '取消关注者', '取关观察起点', '取关观察终点'], ...visible.map(u => [u.handle, u.name, labels[u.relation], current().notes[u.handle]?.tag, current().notes[u.handle]?.note, (current().ignored || []).includes(u.handle) ? '是' : '否', u.avatarUrl, u.bio, comparison && ['notBack', 'fansOnly'].includes(u.relation) && comparison.users.has(u.handle) ? observationText(comparison.users.get(u.handle)) : '', comparison?.users.get(u.handle) ? new Date(comparison.startedAt).toISOString() : '', comparison?.users.get(u.handle) ? new Date(comparison.endedAt).toISOString() : '', comparison?.unfollowerHandles.has(u.handle) ? '是' : '', comparison?.unfollowerHandles.has(u.handle) ? new Date(comparison.unfollowers.startedAt).toISOString() : '', comparison?.unfollowerHandles.has(u.handle) ? new Date(comparison.unfollowers.endedAt).toISOString() : ''])];
   download(`x-${owner || 'empty'}-${view}.csv`, '\uFEFF' + rows.map(row => row.map(safe).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
 };
 const scheduleDataRefresh = createRefreshScheduler(async () => {

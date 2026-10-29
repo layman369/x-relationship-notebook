@@ -1,12 +1,12 @@
 # X 关系簿
 
-Chrome / Edge Manifest V3 扩展 0.12.0。支持一键自动扫描关注者和正在关注名单，分析未回关、互关及粉丝变化。无第三方依赖，无远程服务器，无远程上传。扫描通过浏览器内的后台协调器与页面脚本运行。
+Chrome / Edge Manifest V3 扩展 0.13.0。支持一键自动扫描关注者和正在关注名单，分析未回关、互关及粉丝变化。无第三方依赖，无远程服务器，无远程上传。扫描通过浏览器内的后台协调器与页面脚本运行。
 
 ## 下载
 
-[下载最新 GitHub 安装包](https://github.com/layman369/x-relationship-notebook/releases/latest/download/x-relationship-notebook-0.12.0.zip) · [版本与校验文件](https://github.com/layman369/x-relationship-notebook/releases/tag/v0.12.0)
+[下载最新 GitHub 安装包](https://github.com/layman369/x-relationship-notebook/releases/latest/download/x-relationship-notebook-0.13.0.zip) · [版本与校验文件](https://github.com/layman369/x-relationship-notebook/releases/tag/v0.13.0)
 
-下载 Assets 中的扩展 ZIP，解压后按下面步骤加载。GitHub 自动生成的 Source code ZIP 不是本项目的精简运行包。尚未发布浏览器扩展商店。
+下载 Assets 中的扩展 ZIP，解压后按下面步骤加载。GitHub 自动生成的 Source code ZIP 不是本项目的精简运行包。[Chrome商店安装页](https://chromewebstore.google.com/detail/ggpjbpcpkibjljfejghmencldcplnole)已上线，商店当前版本为0.12.0；GitHub安装包为0.13.0。
 
 ## 安装
 
@@ -15,7 +15,7 @@ Chrome / Edge Manifest V3 扩展 0.12.0。支持一键自动扫描关注者和�
 3. 选择本项目目录（包含 manifest.json 的目录）。如果使用 zip，先解压并选择解压目录。
 4. 将「X 关系簿」固定到工具栏。点击扩展中的「打开关系管理台」。
 
-0.12.0 已于2026-10-21提交Chrome商店审核，审核通过后自动发布；当前可使用GitHub安装包。网页预览与扩展使用独立存储，彼此不会同步。
+2026-10-30已确认0.12.0在Chrome商店公开发布；0.13.0可使用GitHub安装包。网页预览与扩展使用独立存储，彼此不会同步。
 
 升级：已加载本项目目录的用户，在扩展管理页点击「重新加载」；如浏览器提示新增 X 页面访问权限，确认后启用。已有名单、备注和快照继续使用原有存储格式。最低 Chrome / Chromium 版本为 120。
 
@@ -100,7 +100,7 @@ npm run preview
 
 若提示权限问题：先在 `chrome://extensions` 确认本扩展版本为 0.10.5，点击重新加载；旧的扫描标签页可以关闭。重新点击扫描并允许访问 X。如果使用旧 ZIP 解压目录安装，需要先将该目录更新到新版。若仍被拒绝，可在扩展详情的「网站访问权限」中核对 x.com 是否允许。无需卸载扩展或删除本机数据。
 
-打包：在项目目录执行 `powershell -File scripts/package.ps1`，生成 `dist/x-relationship-notebook-0.12.0.zip`，不包含 .git、测试、演示截图或商店草稿。
+打包：在项目目录执行 `powershell -File scripts/package.ps1`，生成 `dist/x-relationship-notebook-0.13.0.zip`，不包含 .git、测试、演示截图或商店草稿。
 
 0.3.0 新增 sidePanel 权限及独立进度面板，默认缩放降到 25%。侧边栏打开调用在用户点击内立即执行，避免先等待权限或后台消息而失去用户手势；打开失败会提示可重试，但采集任务仍可继续。自动扫描在发起任务的同一浏览器窗口创建标签页。新增启动手势顺序、侧边栏失败、未授权不启动、进度名单隔离及最多 50 条展示测试。真实浏览器侧边栏打开与登录 X 扫描仍需实测。
 
@@ -166,3 +166,6 @@ npm run preview
 发布资料：[总表](CHROMEWEBSTORE.md)、[说明](store/PUBLISHING-GUIDE.md)、[隐私政策](docs/privacy.md)。商店示例预览使用独立端口4174与内存数据，不在扩展内预置演示账号。
 
 隐私政策公开地址：https://layman369.github.io/x-relationship-notebook/privacy.html （2026-10-18验证可访问）。
+
+
+0.13.0 新增备份对比取关者：选择同账号较早备份后，显示取关者侧边栏入口、统计卡片和表格。备份粉丝中存在而当前完整粉丝名单中缺失的用户标记为取消关注者；旧名单可以是部分记录，当前名单必须核对完整且采集时间晚于备份。仅需粉丝名单即可对比，不受关注名单缺失或双向时长无法计算影响。支持搜索、标签备注、忽略、分页和CSV导出；已从当前所有名单消失的用户使用备份资料展示。结果为本次对比计算，清除对比或刷新后需重新选择备份，不修改原始名单或备份。按用户名匹配，改名、封号、停用或漏采也可能造成消失，不能确定取关原因和精确时间。

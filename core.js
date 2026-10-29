@@ -105,6 +105,39 @@ export function compareNotBack(current, before, relation = 'notBack') {
     previous.has(user.handle) ? { durationMs, level, startedAt, endedAt } : null]));
   return { users, startedAt, endedAt, durationMs };
 }
+// A missing follower is a snapshot difference, not proof of the cause or exact unfollow time.
+export function compareUnfollowers(current, before) {
+  if (!current || !before) throw new Error('所选备份中没有当前账号，请选择同一账号的备份');
+  if (!current.followers.complete) throw new Error('当前粉丝名单需确认完整，才能判断取关者');
+  const times = [before, current].map(data => {
+    const value = data.followers.updatedAt;
+    const time = typeof value === 'string' ? Date.parse(value) : NaN;
+    if (!Number.isFinite(time)) throw new Error('粉丝名单缺少有效采集时间，无法对比取关者');
+    return time;
+  });
+  const [startedAt, endedAt] = times;
+  if (endedAt <= startedAt) throw new Error('请选择粉丝名单采集时间更早的备份，才能对比取关者');
+  const present = new Set(current.followers.users.map(user => user.handle));
+  const profiles = new Map(analyze(current).map(user => [user.handle, user]));
+  const users = before.followers.users.filter(user => !present.has(user.handle)).map(user => {
+    const profile = profiles.get(user.handle);
+    return { ...user, name: profile?.name && profile.name !== user.handle ? profile.name : user.name,
+      avatarUrl: profile?.avatarUrl || user.avatarUrl || '', bio: profile?.bio || user.bio || '', relation: 'unfollowers' };
+  });
+  return { users, startedAt, endedAt };
+}
+export function compareBackupRelations(current, before) {
+  const results = [], warnings = [];
+  for (const relation of ['notBack', 'fansOnly']) {
+    try { results.push(compareNotBack(current, before, relation)); }
+    catch (error) { warnings.push(error.message); }
+  }
+  let unfollowers = null;
+  try { unfollowers = compareUnfollowers(current, before); }
+  catch (error) { warnings.push(error.message); }
+  if (!results.length && !unfollowers) throw new Error([...new Set(warnings)].join('；'));
+  return { ...results[0], users: new Map(results.flatMap(result => [...result.users])), unfollowers, unfollowerHandles: new Set(unfollowers?.users.map(user => user.handle) || []), warnings };
+}
 function normalizeScanRecord(raw) {
   if (!raw || typeof raw.id !== 'string' || !Number.isFinite(Date.parse(raw.startedAt)) || !Number.isFinite(Date.parse(raw.finishedAt))) throw new Error('扫描记录格式错误');
   const startedAt = new Date(raw.startedAt).toISOString(), finishedAt = new Date(raw.finishedAt).toISOString();
