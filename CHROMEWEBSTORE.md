@@ -212,4 +212,4 @@ Homepage URL: https://github.com/layman369/x-relationship-notebook
 
 ## 0.14.1 发布进度（2026-11-04）
 
-包含管理台精简、扫描误差≤10人自动确认、星标朋友及简介误采修复。权限不变。准备推送源码并发布GitHub运行ZIP；Chrome商店要求重新登录验证身份，尚未上传0.14.1。
+包含管理台精简、扫描误差≤10人自动确认、星标朋友及简介误采修复。权限不变。源码已推送master（1345ec4），GitHub Release v0.14.1已公开发布，含运行ZIP与SHA256SUMS.txt，公开下载校验一致；115项测试通过。Chrome商店停在Google密码验证页，等待用户完成验证，尚未上传或提交0.14.1。
