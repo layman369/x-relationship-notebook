@@ -6,7 +6,7 @@ Chrome / Edge Manifest V3 扩展 0.14.1。支持一键自动扫描关注者和�
 
 [下载最新 GitHub 安装包](https://github.com/layman369/x-relationship-notebook/releases/latest/download/x-relationship-notebook-0.14.1.zip) · [版本与校验文件](https://github.com/layman369/x-relationship-notebook/releases/tag/v0.14.1)
 
-下载 Assets 中的扩展 ZIP，解压后按下面步骤加载。GitHub 自动生成的 Source code ZIP 不是本项目的精简运行包。[Chrome商店安装页](https://chromewebstore.google.com/detail/ggpjbpcpkibjljfejghmencldcplnole)已上线，0.13.0已于2026-10-30提交商店更新审核；本次GitHub安装包更新至0.14.1，商店0.14.1提交需完成Google身份验证。
+下载 Assets 中的扩展 ZIP，解压后按下面步骤加载。GitHub 自动生成的 Source code ZIP 不是本项目的精简运行包。[Chrome商店安装页](https://chromewebstore.google.com/detail/ggpjbpcpkibjljfejghmencldcplnole)已上线，0.13.0已于2026-10-30提交商店更新审核；本次GitHub安装包更新至0.14.1，商店0.14.1已于2026-11-04提交审核，通过后自动发布。
 
 ## 安装
 
