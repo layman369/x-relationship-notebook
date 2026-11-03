@@ -10,6 +10,12 @@ export function avatarUrl(value) {
     return url.protocol === 'https:' && url.hostname === 'pbs.twimg.com' && !url.username && !url.password && !url.port && /^\/(profile_images|default_profile_images)\//.test(url.pathname) ? url.href.slice(0, 2048) : '';
   } catch { return ''; }
 }
+export function cleanBiography(value, username) {
+  const text = String(value ?? '').slice(0, 1000);
+  const normalized = text.replace(/[\u200b-\u200f\u2066-\u2069\ufeff]/g, '').trim();
+  const action = new RegExp(`^(?:(?:点击|點擊)\\s*)?(?:取消关注|取消關注|关注|關注)\\s*@?${handle(username)}$|^(?:click\\s+to\\s+)?(?:unfollow|follow)\\s+@?${handle(username)}$`, 'i');
+  return action.test(normalized) ? '' : text;
+}
 export function normalizeUsers(users) {
   if (!Array.isArray(users)) throw new Error('用户列表必须是数组');
   const map = new Map();
@@ -21,7 +27,7 @@ export function normalizeUsers(users) {
     map.set(key, {
       handle: key, name: String(user.name || previous?.name || key).slice(0, 100),
       avatarUrl: Object.hasOwn(user, 'avatarUrl') ? avatarUrl(user.avatarUrl) : previous?.avatarUrl || '',
-      bio: Object.hasOwn(user, 'bio') ? String(user.bio ?? '').slice(0, 1000) : previous?.bio || ''
+      bio: Object.hasOwn(user, 'bio') ? (cleanBiography(user.bio, key) || (String(user.bio || '').trim() ? previous?.bio || '' : '')) : previous?.bio || ''
     });
   }
   return [...map.values()];
@@ -31,7 +37,7 @@ export function account(state, owner) {
   if (!Object.hasOwn(state.accounts, key)) Object.defineProperty(state.accounts, key, { enumerable: true, configurable: true, writable: true, value: {
     following: { users: [], complete: false, updatedAt: null },
     followers: { users: [], complete: false, updatedAt: null },
-    notes: Object.create(null), snapshots: [], ignored: [], hideIgnored: true, scanHistory: []
+    notes: Object.create(null), snapshots: [], ignored: [], starred: [], hideIgnored: true, scanHistory: []
   } });
   return state.accounts[key];
 }
@@ -69,6 +75,12 @@ export function setIgnored(data, username, ignored) {
 }
 export function isFilteredOut(data, username) {
   return data?.hideIgnored !== false && (data?.ignored || []).includes(username);
+}
+export function setStarred(data, username, starred) {
+  const key = handle(username);
+  const users = new Set(data.starred || []);
+  if (starred) users.add(key); else users.delete(key);
+  data.starred = [...users];
 }
 export function saveSnapshot(data) {
   if (!data.followers.complete) throw new Error('请先确认粉丝列表完整，再保存粉丝快照');
@@ -178,6 +190,8 @@ export function validateState(input) {
     if (raw.ignored !== undefined && !Array.isArray(raw.ignored)) throw new Error('忽略名单必须是数组');
     if (raw.hideIgnored !== undefined && typeof raw.hideIgnored !== 'boolean') throw new Error('忽略过滤开关格式错误');
     data.ignored = [...new Set((raw.ignored || []).map(handle))];
+    if (raw.starred !== undefined && !Array.isArray(raw.starred)) throw new Error('星标朋友名单必须是数组');
+    data.starred = [...new Set((raw.starred || []).map(handle))];
     data.hideIgnored = raw.hideIgnored !== false;
     if (raw.scanHistory !== undefined && !Array.isArray(raw.scanHistory)) throw new Error('扫描历史格式错误');
     data.scanHistory = (raw.scanHistory || []).slice(-30).map(normalizeScanRecord);

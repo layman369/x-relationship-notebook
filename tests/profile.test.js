@@ -33,3 +33,13 @@ test('avatar component loads lazily without referrer and keeps its initial fallb
   img.onerror(); assert.equal(img.removed, true); assert.equal(avatar.textContent, 'A');
   assert.equal(renderAvatar({ handle: 'alice', name: 'Alice', avatarUrl: 'javascript:bad' }).children.length, 0);
 });
+
+
+test('known action-hint pollution is removed from backups without erasing real biographies', async () => {
+  const {normalizeUsers}=await import('../core.js');
+  assert.equal(normalizeUsers([{handle:'gabrielthesonez',bio:'点击 取消关注 gabrielthesonez'}])[0].bio,'');
+  assert.equal(normalizeUsers([{handle:'alice',bio:'Click to unfollow @alice'}])[0].bio,'');
+  assert.equal(normalizeUsers([{handle:'alice',bio:'取消关注不是我的风格'}])[0].bio,'取消关注不是我的风格');
+  assert.equal(normalizeUsers([{handle:'alice',bio:'Click to unfollow bob'}])[0].bio,'Click to unfollow bob');
+  assert.equal(normalizeUsers([{handle:'alice',bio:'Artist'},{handle:'alice',bio:'点击 取消关注 alice'}])[0].bio,'Artist');
+});

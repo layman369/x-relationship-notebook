@@ -32,14 +32,15 @@ async function scanFixture(pages, options = {}) {
     const person = typeof item === 'string' ? { handle: item } : item;
     const image = person.avatarUrl ? { src: person.avatarUrl, currentSrc: person.avatarUrl } : null;
     let cell;
-    const description = Object.hasOwn(person, 'bio') ? { get innerText() { return person.bio; }, get textContent() { return person.bio; }, closest: () => options.clickableCard ? cell : null, contains: () => false, querySelector: () => null } : null;
+    const description = Object.hasOwn(person, 'bio') ? { get innerText() { return person.bio; }, get textContent() { return person.bio; }, closest: selector => options.clickableCard && selector === 'a,button,[role="button"]' ? cell : null, contains: () => false, querySelector: () => null } : null;
     if (description && person.emoji) description.childNodes = [{ nodeType: 3, nodeValue: person.bio }, { nodeType: 1, tagName: 'IMG', getAttribute: () => person.emoji }];
     const links = [
       { textContent: `@${person.handle}`, getAttribute: () => `/${person.handle}`, querySelectorAll: () => [] },
       { textContent: `Name ${person.handle}`, getAttribute: () => `/${person.handle}`, querySelectorAll: () => options.fallbackAvatar && image ? [image] : [] }
     ];
+    const actionHint = options.actionHint ? { innerText: options.actionHint, closest: () => null, contains: () => false, querySelector: () => null } : null;
     cell = { outside: person.outside,
-      querySelectorAll: selector => { if (selector === 'a[href]') { parses.set(person.handle, (parses.get(person.handle) || 0) + 1); return links; } return selector === 'div[dir="auto"]' && description ? [description] : []; },
+      querySelectorAll: selector => { if (selector === 'a[href]') { parses.set(person.handle, (parses.get(person.handle) || 0) + 1); return links; } return selector === 'div[dir="auto"]' ? [description, actionHint].filter(Boolean) : []; },
       closest: () => cell, contains: other => other === cell || other === description,
       querySelector: selector => selector.includes('UserAvatar') ? (options.fallbackAvatar ? null : image) : selector.includes('UserDescription') ? (options.fallbackBio ? null : description) : null
     };
@@ -216,4 +217,16 @@ test('stop interrupts an active wait immediately and flushes the new users', asy
   const { result, elapsed, messages } = await scanFixture([['alice'], ['bob']], { realMutations: true, stopDuringWait: true });
   assert.equal(result.outcome, 'stopped'); assert.equal(elapsed, 100);
   assert.deepEqual(messages.flatMap(message => message.users).map(user => user.handle), ['alice', 'bob']);
+});
+
+
+test('fallback excludes unfollow action hints even when they are longer than the actual biography', async () => {
+  const {messages}=await scanFixture([[{handle:'gabrielthesonez',bio:'Artist'}]],{fallbackBio:true,actionHint:'点击 取消关注 gabrielthesonez'});
+  assert.equal(messages.flatMap(m=>m.users)[0].bio,'Artist');
+});
+test('cards with only action hints do not manufacture biographies', async () => {
+  for(const hint of ['点击 取消关注 gabrielthesonez','Click to unfollow @gabrielthesonez']) {
+    const {messages}=await scanFixture([[{handle:'gabrielthesonez'}]],{fallbackBio:true,actionHint:hint});
+    assert.equal(messages.flatMap(m=>m.users)[0].bio,undefined);
+  }
 });

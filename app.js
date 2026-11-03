@@ -1,7 +1,6 @@
 import { createRefreshScheduler } from './ui-refresh.js';
-import { account, handle, setList, saveSnapshot, diffSnapshots, validateState, setIgnored, isFilteredOut, compareBackupRelations } from './core.js';
+import { account, handle, setList, saveSnapshot, diffSnapshots, validateState, setIgnored, setStarred, isFilteredOut, compareBackupRelations } from './core.js';
 import { readState, updateState, isExtension } from './storage.js';
-import { mountScanControls } from './scan-controls.js';
 import { queryUsers, paginate } from './list-view.js';
 import { renderAvatar } from './profile-ui.js';
 const $ = s => document.querySelector(s);
@@ -14,7 +13,7 @@ let scanBusy = false;
 let comparisonBackup = null, comparisonFilename = '', comparison = null;
 let currentPage = 1, pageSize = 20;
 const labels = { unfollowers: '取消关注者', mutual: '互相关注', notBack: '未回关我', fansOnly: '我未回关', followingUnknown: '我已关注 · 回关待确认', followerUnknown: '关注了我 · 关系待确认', unrecorded: '暂无当前名单记录' };
-const viewNames = { unfollowers: '取关者', all: '全部关系', following: '已收集关注', followers: '已收集粉丝', mutual: '互相关注', notBack: '未回关我的', fansOnly: '我未回关的', ignored: '已忽略用户', changes: '粉丝变化' };
+const viewNames = { starred: '星标朋友', unfollowers: '取关者', all: '全部关系', following: '已收集关注', followers: '已收集粉丝', mutual: '互相关注', notBack: '未回关我的', fansOnly: '我未回关的', ignored: '已忽略用户', changes: '粉丝变化' };
 function element(tag, text, className) {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
@@ -51,7 +50,7 @@ function renderScanSummary(data) {
   const history = data?.scanHistory || [];
   if (!history.length) { target.append(element('p', '尚无已保存的扫描记录；下次扫描结束后将记录用时、主页人数与实际采集人数。', 'scan-summary-empty')); return; }
   const record = history.at(-1);
-  const phases = { review: '已结束 · 待核对', stopped: '已停止', stalled: '加载停滞', limit: '达到上限', interrupted: '已中断', error: '扫描失败', partial: '部分结束' };
+  const phases = { review: '已结束', stopped: '已停止', stalled: '加载停滞', limit: '达到上限', interrupted: '已中断', error: '扫描失败', partial: '部分结束' };
   const header = element('div', undefined, 'scan-summary-heading');
   header.append(element('strong', '最近一次扫描'), element('strong', `总用时 ${scanDuration(record.durationMs)}`, 'scan-duration'), element('span', phases[record.phase] || '已结束'));
   const range = element('p', `${new Date(record.startedAt).toLocaleString('zh-CN')} → ${new Date(record.finishedAt).toLocaleString('zh-CN')}`, 'scan-time-range');
@@ -64,7 +63,7 @@ function renderScanSummary(data) {
     if (metric?.readAt) card.append(element('small', `主页读取：${new Date(metric.readAt).toLocaleString('zh-CN')}`));
     if (result) {
       let difference = '主页人数未获取';
-      if (metric) difference = metric.approximate ? '主页为缩写约数' : result.count === metric.count ? '人数一致，仍需核对完整性' : `比主页${result.count < metric.count ? '少' : '多'} ${Math.abs(result.count - metric.count).toLocaleString('zh-CN')} 人`;
+      if (metric) difference = metric.approximate ? '主页为缩写约数' : result.count === metric.count ? '人数一致' : `比主页${result.count < metric.count ? '少' : '多'} ${Math.abs(result.count - metric.count).toLocaleString('zh-CN')} 人`;
       card.append(element('small', `用时 ${scanDuration(result.durationMs)} · ${phases[result.outcome] || '已结束'}`), element('small', difference));
     }
     comparison.append(card);
@@ -146,7 +145,7 @@ function render() {
   document.querySelector('[data-view="unfollowers"]').hidden = !comparisonBackup;
   if (view === 'unfollowers' && !comparisonBackup) view = 'all';
   $('#ignored-nav-count').textContent = data?.ignored?.length || 0;
-  const subtitles = { unfollowers: 'unfollowers', following: 'following', followers: 'followers', notBack: 'not following back', mutual: 'mutual connections', fansOnly: 'not followed back by me', ignored: 'ignored users' };
+  const subtitles = { starred: 'starred friends', unfollowers: 'unfollowers', following: 'following', followers: 'followers', notBack: 'not following back', mutual: 'mutual connections', fansOnly: 'not followed back by me', ignored: 'ignored users' };
   $('#stats').replaceChildren();
   document.querySelectorAll('nav .nav[data-view]').forEach(nav => {
     const target = nav.dataset.view;
@@ -164,7 +163,7 @@ function render() {
     card.append(element('div', label, 'stat-label'), element('strong', String(value)), element('span', target === 'unfollowers' && !comparison?.unfollowers ? '需较早备份及完整粉丝名单' : missingList ? `需完整${missingList}名单` : subtitles[target], 'stat-sub'));
     $('#stats').append(card);
   });
-  $('#health-text').textContent = '互关可据已有记录确认；判断未回关需要另一侧名单完整。完整性由你核对。';
+  $('#health-text').textContent = '互关可据已有记录确认；判断未回关需要另一侧名单完整。正常扫描结束且与主页精确人数误差≤10人时自动勾选；可手动调整。';
   $('#completeness').replaceChildren();
   for (const [kind, title] of [['following', '关注'], ['followers', '粉丝']]) {
     const label = element('label', undefined, 'check');
@@ -198,7 +197,7 @@ function render() {
   $('#tag-filter').classList.toggle('is-filtered', !!filters.tag);
   visible = queryUsers(data, view, $('#search').value, filters);
   const pagination = paginate(visible, currentPage, pageSize); currentPage = pagination.page;
-  $('#result-count').textContent = `共 ${visible.length} 位用户${filtered ? ' · 已筛选' : ''}${view === 'ignored' ? ' · 此页始终显示忽略名单，可直接取消忽略' : ''}`;
+  $('#result-count').textContent = `共 ${visible.length} 位用户${filtered ? ' · 已筛选' : ''}${view === 'ignored' ? ' · 此页始终显示忽略名单，可直接取消忽略' : view === 'starred' ? ' · 显示全部星标朋友，包含已忽略用户' : ''}`;
   $('#page-range').textContent = `第 ${pagination.start}–${pagination.end} 条，共 ${pagination.total} 条`;
   $('#page-info').textContent = `第 ${pagination.page} / ${pagination.pages} 页`;
   $('#page-number').value = currentPage; $('#page-number').max = pagination.pages; $('#page-number').disabled = !visible.length;
@@ -211,7 +210,7 @@ function render() {
     const ignored = (data.ignored || []).includes(user.handle); row.classList.toggle('ignored-user', ignored);
     const profile = element('td'); const identity = element('div', undefined, 'identity');
     const avatar = renderAvatar(user);
-    const name = element('div'); name.append(element('strong', user.name), element('small', `@${user.handle}`)); identity.append(avatar, name); profile.append(identity);
+    const name = element('div'); name.append(element('strong', `${(data.starred || []).includes(user.handle) ? '★ ' : ''}${user.name}`), element('small', `@${user.handle}`)); identity.append(avatar, name); profile.append(identity);
     const bio = element('span', user.bio || '暂无简介', `user-bio${user.bio ? ' is-collapsed' : ' is-empty'}`); name.append(bio);
     if (user.bio && (user.bio.length > 40 || /[\r\n]/.test(user.bio))) {
       const expand = element('button', '展开简介', 'user-bio-toggle'); let expanded = false;
@@ -247,7 +246,14 @@ function render() {
     ignore.onclick = () => safely(async () => {
       await persist(ignored ? `已取消忽略 @${user.handle}` : `已忽略 @${user.handle}`, latest => setIgnored(account(latest, owner), user.handle, !ignored));
     });
-    actions.append(edit, ignore, link); row.append(profile, relation, notes, actions); $('#rows').append(row);
+    const starred = (data.starred || []).includes(user.handle);
+    const star = element('button', starred ? '★ 取消星标' : '☆ 星标', 'star-action');
+    star.setAttribute('aria-label', `${starred ? '取消星标' : '星标'} @${user.handle}`);
+    star.setAttribute('aria-pressed', String(starred));
+    star.onclick = () => safely(async () => {
+      await persist(starred ? `已取消星标 @${user.handle}` : `已星标 @${user.handle}`, latest => setStarred(account(latest, owner), user.handle, !starred));
+    });
+    actions.append(star, edit, ignore, link); row.append(profile, relation, notes, actions); $('#rows').append(row);
   }
   $('#empty').hidden = visible.length > 0;
   $('#empty h3').textContent = !data || (!data.following.users.length && !data.followers.users.length) ? '从第一份名单开始' : '暂无符合条件的用户';
@@ -257,6 +263,10 @@ function render() {
     $('#empty p').textContent = filtered ? '请调整搜索条件后重试。' : '在其他用户名单中点击“忽略”，即可在这里统一管理。';
   }
   if (!visible.length && filtered && view !== 'ignored' && !((view === 'notBack' && !data?.followers.complete) || (view === 'fansOnly' && !data?.following.complete))) $('#empty p').textContent = '请在列头选择其他标签或全部标签，或调整搜索条件。';
+  if (view === 'starred') {
+    $('#empty h3').textContent = filtered ? '暂无符合条件的星标朋友' : '暂无星标朋友';
+    $('#empty p').textContent = filtered ? '请调整搜索或标签筛选条件。' : '点击用户操作栏中的“☆ 星标”，即可在这里集中管理。此页显示全部星标朋友，包含已忽略或已不在当前名单中的用户。';
+  }
   if (view === 'unfollowers') {
     $('#empty h3').textContent = comparison?.unfollowers ? (filtered ? '暂无符合条件的取关者' : '未发现取关者') : '暂无法判断取关者';
     $('#empty p').textContent = comparison?.unfollowers ? '取关者指备份中关注了你、当前完整粉丝名单中已不存在的用户；可能涉及改名、封号或账号停用。' : '请停止扫描、确认当前粉丝名单完整，并选择粉丝名单采集时间更早的同账号备份。';
@@ -385,7 +395,7 @@ $('#restore').onchange = event => safely(async () => {
 });
 $('#export-csv').onclick = () => {
   const safe = value => { let s = String(value || ''); if (/^[\s]*[=+\-@]/.test(s)) s = `'${s}`; return `"${s.replaceAll('"', '""')}"`; };
-  const rows = [['用户名', '昵称', '关系', '标签', '备注', '已忽略', '头像链接', '简介', '未回关观察时长', '观察起点', '观察终点', '取消关注者', '取关观察起点', '取关观察终点'], ...visible.map(u => [u.handle, u.name, labels[u.relation], current().notes[u.handle]?.tag, current().notes[u.handle]?.note, (current().ignored || []).includes(u.handle) ? '是' : '否', u.avatarUrl, u.bio, comparison && ['notBack', 'fansOnly'].includes(u.relation) && comparison.users.has(u.handle) ? observationText(comparison.users.get(u.handle)) : '', comparison?.users.get(u.handle) ? new Date(comparison.startedAt).toISOString() : '', comparison?.users.get(u.handle) ? new Date(comparison.endedAt).toISOString() : '', comparison?.unfollowerHandles.has(u.handle) ? '是' : '', comparison?.unfollowerHandles.has(u.handle) ? new Date(comparison.unfollowers.startedAt).toISOString() : '', comparison?.unfollowerHandles.has(u.handle) ? new Date(comparison.unfollowers.endedAt).toISOString() : ''])];
+  const rows = [['用户名', '昵称', '关系', '标签', '备注', '已忽略', '头像链接', '简介', '未回关观察时长', '观察起点', '观察终点', '取消关注者', '取关观察起点', '取关观察终点', '星标朋友'], ...visible.map(u => [u.handle, u.name, labels[u.relation], current().notes[u.handle]?.tag, current().notes[u.handle]?.note, (current().ignored || []).includes(u.handle) ? '是' : '否', u.avatarUrl, u.bio, comparison && ['notBack', 'fansOnly'].includes(u.relation) && comparison.users.has(u.handle) ? observationText(comparison.users.get(u.handle)) : '', comparison?.users.get(u.handle) ? new Date(comparison.startedAt).toISOString() : '', comparison?.users.get(u.handle) ? new Date(comparison.endedAt).toISOString() : '', comparison?.unfollowerHandles.has(u.handle) ? '是' : '', comparison?.unfollowerHandles.has(u.handle) ? new Date(comparison.unfollowers.startedAt).toISOString() : '', comparison?.unfollowerHandles.has(u.handle) ? new Date(comparison.unfollowers.endedAt).toISOString() : '', (current().starred || []).includes(u.handle) ? '是' : '否'])];
   download(`x-${owner || 'empty'}-${view}.csv`, '\uFEFF' + rows.map(row => row.map(safe).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
 };
 const scheduleDataRefresh = createRefreshScheduler(async () => {
@@ -397,5 +407,23 @@ const scheduleDataRefresh = createRefreshScheduler(async () => {
 });
 if (isExtension) chrome.storage.onChanged.addListener((changes, area) => { if (area === 'local' && changes['x-relationship-notebook-v1']) scheduleDataRefresh(); });
 render();
-document.addEventListener('xrb-scan-status', event => { if (scanBusy !== event.detail.busy) { scanBusy = event.detail.busy; render(); } });
-await mountScanControls(() => owner);
+// Keep data-write guards in sync with scans launched from the popup or side panel.
+if (isExtension) {
+  let revision = 0;
+  const syncScanStatus = job => {
+    const busy = !!job && ['loading', 'running'].includes(job.phase);
+    if (scanBusy !== busy) { scanBusy = busy; render(); }
+  };
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'session' && changes['xrb-scan-job']) {
+      revision++;
+      syncScanStatus(changes['xrb-scan-job'].newValue);
+    }
+  });
+  const initialRevision = revision;
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'XRB_SCAN_STATUS' });
+    if (!response?.ok) throw new Error(response?.error || '无法读取扫描状态，请重新加载扩展');
+    if (revision === initialRevision) syncScanStatus(response.job);
+  } catch (error) { status(error.message); }
+}

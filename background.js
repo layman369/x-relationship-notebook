@@ -174,7 +174,18 @@ async function receive(message, sender) {
     if (message.type === 'XRB_SCAN_DONE') {
       await restoreZoom(job);
       const outcome = job.stopRequested ? 'stopped' : message.outcome;
-      const reason = job.stopRequested ? '已停止，已保存部分名单' : String(message.reason || '').slice(0, 300);
+      let reason = job.stopRequested ? '已停止，已保存部分名单' : String(message.reason || '').slice(0, 300);
+      const metric = job.profileTotals?.[kind];
+      if (outcome === 'review' && job.written && metric?.approximate === false && Number.isSafeInteger(metric.count) && metric.count >= 0) {
+        let confirmed = false;
+        await updateState(state => {
+          const list = state.accounts[job.owner]?.[kind];
+          if (list && list.users.length === job.counts[kind] && Math.abs(list.users.length - metric.count) <= 10) {
+            list.complete = true; confirmed = true;
+          }
+        });
+        if (confirmed) reason = `已自动标记名单完整（主页 ${metric.count} 人，采集 ${job.counts[kind]} 人，误差 ${Math.abs(job.counts[kind] - metric.count)} 人 ≤ 10）；${reason}`;
+      }
       job.results.push({ kind, count: job.counts[kind] || 0, outcome, reason, durationMs: Math.max(0, Date.now() - (job.kindStartedAt || job.startedAt || Date.now())) });
       if (['review', 'stalled', 'limit'].includes(outcome) && job.index + 1 < job.kinds.length) {
         job.index++; job.kindStartedAt = null; job.lastGrowthAt = null; job.phase = 'loading'; job.documentId = null; job.written = false; job.reason = '正在打开下一份名单';

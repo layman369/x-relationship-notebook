@@ -209,3 +209,51 @@ test('stopping a scan closes the temporary totals reader and ignores its late re
   await send({ type: 'XRB_SCAN_PROFILE_TOTALS', id, totals: { followers: { count: 99, approximate: false } } }, { ...pageSender('followers'), url: 'https://x.com/owner', tab: { id: 42 } });
   assert.deepEqual(job().totals, {});
 });
+
+
+test('normal completion auto-confirms exact profile differences through ten inclusive in either direction', async () => {
+  for (const [count, expected] of [[89,false],[90,true],[100,true],[110,true],[111,false]]) {
+    reset(); await send({type:'XRB_SCAN_START',owner:'owner',kind:'followers'});
+    const profile = {...pageSender('followers'),url:'https://x.com/owner',tab:{id:42},documentId:'profile-doc'};
+    await send({type:'XRB_SCAN_PAGE_READY'},profile);
+    await send({type:'XRB_SCAN_PROFILE_TOTALS',id:job().id,totals:{followers:{count:100,approximate:false}}},profile);
+    await ready();
+    const users=Array.from({length:count},(_,i)=>`user${i}`);
+    await send({type:'XRB_SCAN_BATCH',id:job().id,kind:'followers',users},pageSender('followers'));
+    assert.equal(data().accounts.owner.followers.complete,false);
+    await send({type:'XRB_SCAN_DONE',id:job().id,kind:'followers',users:[],outcome:'review',reason:'bottom'},pageSender('followers'));
+    assert.equal(data().accounts.owner.followers.complete,expected);
+    assert.equal(data().accounts.owner.scanHistory[0].results[0].reason.includes('已自动标记名单完整'),expected);
+  }
+});
+
+test('approximate or missing totals, stopping and abnormal endings never auto-confirm', async () => {
+  for(const scenario of ['approximate','missing','stop','stalled','limit','interrupted','error','empty']) {
+    reset(); await send({type:'XRB_SCAN_START',owner:'owner',kind:'followers'});
+    if(scenario!=='missing') {
+      const profile={...pageSender('followers'),url:'https://x.com/owner',tab:{id:42},documentId:'profile-doc'};
+      await send({type:'XRB_SCAN_PAGE_READY'},profile);
+      await send({type:'XRB_SCAN_PROFILE_TOTALS',id:job().id,totals:{followers:{count:1,approximate:scenario==='approximate'}}},profile);
+    }
+    await ready();
+    if(scenario!=='empty') await send({type:'XRB_SCAN_BATCH',id:job().id,kind:'followers',users:['alice']},pageSender('followers'));
+    if(scenario==='stop') await send({type:'XRB_SCAN_STOP'});
+    const outcome=['stalled','limit','interrupted','error'].includes(scenario)?scenario:'review';
+    await send({type:'XRB_SCAN_DONE',id:job().id,kind:'followers',users:[],outcome},pageSender('followers'));
+    assert.notEqual(data()?.accounts.owner.followers.complete,true,scenario);
+  }
+});
+
+test('both lists are confirmed independently and page totals cannot substitute for profile evidence', async () => {
+  reset(); await send({type:'XRB_SCAN_START',owner:'owner',kind:'both'});
+  const profile={...pageSender('followers'),url:'https://x.com/owner',tab:{id:42},documentId:'profile-doc'};
+  await send({type:'XRB_SCAN_PAGE_READY'},profile);
+  await send({type:'XRB_SCAN_PROFILE_TOTALS',id:job().id,totals:{followers:{count:11,approximate:false},following:{count:12,approximate:false}}},profile);
+  await ready();
+  await send({type:'XRB_SCAN_DONE',id:job().id,kind:'followers',users:['alice'],outcome:'review'},pageSender('followers'));
+  assert.equal(data().accounts.owner.followers.complete,true);
+  await ready('following');
+  await send({type:'XRB_SCAN_DONE',id:job().id,kind:'following',users:['bob'],outcome:'review',total:1},pageSender('following'));
+  assert.equal(data().accounts.owner.following.complete,false);
+  assert.equal(data().accounts.owner.followers.complete,true);
+});

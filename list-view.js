@@ -5,13 +5,14 @@ export function queryUsers(data, view, search = '', filters = {}) {
   const followers = new Set(data.followers.users.map(user => user.handle));
   const query = search.trim().toLowerCase();
   const ignored = new Set(data.ignored || []);
+  const starred = new Set(data.starred || []);
   const relations = analyze(data);
   const known = new Map(relations.map(user => [user.handle, user]));
   // Keep absent users manageable after a new scan replaces the collected lists.
-  const users = view === 'unfollowers' ? (filters.unfollowers || []) : view === 'ignored' ? [...ignored].map(handle => known.get(handle) || { handle, name: handle, relation: 'unrecorded' }) : relations;
+  const users = view === 'unfollowers' ? (filters.unfollowers || []) : ['ignored', 'starred'].includes(view) ? [...(view === 'starred' ? starred : ignored)].map(handle => known.get(handle) || { handle, name: handle, relation: 'unrecorded' }) : relations;
   return users.filter(user => {
-    if (view !== 'ignored' && data.hideIgnored !== false && ignored.has(user.handle)) return false;
-    const matches = view === 'all' || view === 'ignored' || (view === 'following' ? following.has(user.handle) : view === 'followers' ? followers.has(user.handle) : user.relation === view);
+    if (!['ignored', 'starred'].includes(view) && data.hideIgnored !== false && ignored.has(user.handle)) return false;
+    const matches = ['all', 'ignored', 'starred'].includes(view) || (view === 'following' ? following.has(user.handle) : view === 'followers' ? followers.has(user.handle) : user.relation === view);
     const note = data.notes[user.handle];
     const tag = String(note?.tag || '').trim();
     const memo = String(note?.note || '').trim();

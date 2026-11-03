@@ -43,6 +43,7 @@ export function scanPage(config) {
     if (!queued) { queued = true; queueMicrotask(() => { queued = false; collect(); }); }
   }
   function biographyText(node) {
+    if (node.matches?.('button,[role="button"],[role="tooltip"],[hidden],[aria-hidden="true"],.sr-only,.visually-hidden')) return '';
     if (!node.childNodes?.length) return node.innerText || node.textContent || '';
     let text = '';
     for (const child of node.childNodes) {
@@ -81,14 +82,18 @@ export function scanPage(config) {
           if (url.protocol === 'https:' && url.hostname === 'pbs.twimg.com' && !url.username && !url.password && !url.port && /^\/(profile_images|default_profile_images)\//.test(url.pathname)) user.avatarUrl = url.href.slice(0, 2048);
         } catch { /* Leave the previous avatar when the page image is not ready. */ }
       }
-      const description = cell.querySelector('[data-testid="UserDescription"]')
-        || [...cell.querySelectorAll('div[dir="auto"]')].filter(node => {
+      const actionText = new RegExp(`^(?:(?:点击|點擊)\\s*)?(?:取消关注|取消關注|关注|關注)\\s*@?${handle}$|^(?:click\\s+to\\s+)?(?:unfollow|follow)\\s+@?${handle}$`, 'i');
+      const standardDescription = cell.querySelector('[data-testid="UserDescription"]');
+      const candidates = [standardDescription, ...cell.querySelectorAll('div[dir="auto"]')].filter(Boolean);
+      const validDescriptions = candidates.filter(node => {
           const text = biographyText(node).trim();
           const interactive = node.closest('a,button,[role="button"]');
           const insideControl = interactive && interactive !== cell && cell.contains(interactive);
-          return text && !insideControl && !node.contains(link) && !(nameLink && node.contains(nameLink))
+          const hidden = node.closest('[hidden],[aria-hidden="true"],[role="tooltip"],.sr-only,.visually-hidden');
+          return text && !actionText.test(text.replace(/[\u200b-\u200f\u2066-\u2069\ufeff]/g, '')) && !hidden && !insideControl && !node.contains(link) && !(nameLink && node.contains(nameLink))
             && !node.querySelector('button,[role="button"]') && !/^(Follows you|关注了你|跟隨你)$/i.test(text);
-        }).sort((a, b) => biographyText(b).length - biographyText(a).length)[0];
+        });
+      const description = validDescriptions.find(node => node === standardDescription) || validDescriptions.sort((a, b) => biographyText(b).length - biographyText(a).length)[0];
       if (description) user.bio = biographyText(description).trim().slice(0, 1000);
       if (previous && previous.name === user.name && previous.avatarUrl === user.avatarUrl && previous.bio === user.bio) continue;
       users.set(handle, user); pending.set(handle, user);

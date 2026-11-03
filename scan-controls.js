@@ -25,7 +25,7 @@ export async function mountScanControls(getOwner = () => '', onJob = () => {}) {
     document.dispatchEvent(new CustomEvent('xrb-scan-status', { detail: { busy: !!busy } }));
     if (!job) return;
     const counts = job.kinds.map(kind => `${kind === 'followers' ? '关注者' : '正在关注'} ${job.counts[kind] || 0} 人`).join(' · ');
-    status.textContent = `@${job.owner} · ${counts}${job.zoomFactor ? ` · 扫描缩放 ${Math.round(job.zoomFactor * 100)}%` : ''}。${busy ? (job.stopRequested ? '正在停止…' : job.phase === 'loading' ? '正在加载名单…' : '自动滚动采集中…') : job.reason || '已结束'}${Object.values(job.counts).some(n => n > 0) ? '；结果待核对完整性。' : ''}${job.zoomWarning ? ` ${job.zoomWarning}` : ''}${panelWarning ? ` ${panelWarning}` : ''}`;
+    status.textContent = `@${job.owner} · ${counts}${job.zoomFactor ? ` · 扫描缩放 ${Math.round(job.zoomFactor * 100)}%` : ''}。${busy ? (job.stopRequested ? '正在停止…' : job.phase === 'loading' ? '正在加载名单…' : '自动滚动采集中…') : job.reason || '已结束'}${Object.values(job.counts).some(n => n > 0) ? '；完整性判定请查看管理台。' : ''}${job.zoomWarning ? ` ${job.zoomWarning}` : ''}${panelWarning ? ` ${panelWarning}` : ''}`;
   };
   async function request(message) {
     const response = await chrome.runtime.sendMessage(message);
